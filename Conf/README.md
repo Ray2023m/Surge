@@ -42,6 +42,9 @@ Surge最低支持版本 :<br>
 **适配两个机场订阅**<br>
 > **Family :** https://raw.githubusercontent.com/Rabbit-Spec/Surge/refs/heads/Master/Conf/Spec/Surge-Family.conf<br>
 
+**广告拦截模块**<br>
+> **Block ads :** https://raw.githubusercontent.com/thNylHx/Tools/refs/heads/main/Surge/Module/Blockads.sgmodule<br>
+
 ### 3. 使用方式
 复制配置链接 -> 打开 Surge -> 从URL下载配置 -> 粘贴链接 -> 在文本模式中编辑 -> 修改“外部节点”的对应参数 -> 完成!
 
@@ -56,5 +59,5 @@ Surge最低支持版本 :<br>
 
 ## 我用的机场
 **我用着好用不代表你用着也好用，如果想要入手的话，建议先买一个月体验一下。任何机场都有跑路的可能。**<br>
-[「Nexitally」佩奇家主站，一家全线中转线路的高端机场。](https://naixii.com/signupbyemail.aspx?MemberCode=0b532ff85dda43e595fb1ae17843ae6d20211110231626) <br>
+[「Nexitally」佩奇家主站，一家全线中转线路的高端机场。](https://naiixi.com/signupbyemail.aspx?MemberCode=0b532ff85dda43e595fb1ae17843ae6d20211110231626) <br>
 [「TAG」目前共有90+个国家地区节点，覆盖范围目前是机场里最广的。](https://482469.dedicated-afflink.com) <br>
