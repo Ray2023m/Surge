@@ -1,0 +1,2 @@
+# Pokemon Sleep
+DOMAIN-KEYWORD,sleep.pokemon

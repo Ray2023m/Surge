@@ -1,0 +1,217 @@
+# 深巷有喵的「Surge」上游同步规则
+# 版本：1.1.9
+# 日期：2026.04.09
+# 作者：https://github.com/Rabbit-Spec/Surge
+
+name: Auto-Surge-Rules
+
+# 触发器配置
+on:
+  schedule:
+    # 定时任务：北京时间每天 04:00 执行
+    - cron: '0 20 * * *'
+  # 允许手动触发
+  workflow_dispatch:
+
+# 权限配置
+permissions:
+  contents: write
+
+jobs:
+  update-rules:
+    runs-on: ubuntu-latest
+    
+    # 强制所有 JavaScript Actions 使用 Node.js 24
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      
+    steps:
+      # 步骤 1：检出代码
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 步骤 2：下载、清洗、统计并归档
+      - name: Download, Merge and Filter Rules
+        run: |
+          # 创建输出目录及手动规则存储目录
+          mkdir -p Rules/Manual
+          
+          # 获取北京时间
+          UPDATE_TIME=$(TZ="Asia/Shanghai" date +"%Y.%m.%d %H:%M:%S")
+          
+          # 1. 定义标准处理函数 (用于 1对1 的规则同步)
+          process_rule() {
+            local source_url=$1
+            local target_name=$2
+            local display_name=$3
+            
+            local target_path="Rules/$target_name"
+            local filename_no_ext="${target_name%.*}"
+            local manual_file="Rules/Manual/${filename_no_ext}.txt"
+            local exclude_file="Rules/Manual/${filename_no_ext}.exclude.txt"
+            
+            # 创建临时文件存储规则正文
+            temp_body=$(mktemp)
+            
+            # A. 合并手动追加规则
+            if [ -f "$manual_file" ]; then
+              echo "# ======= 手动维护规则 ========" >> "$temp_body"
+              cat "$manual_file" >> "$temp_body"
+              echo "" >> "$temp_body"
+            fi
+            
+            # B. 写入上游同步规则
+            echo "# ======= 上游同步规则 ========" >> "$temp_body"
+            if [ -f "$exclude_file" ] && [ -s "$exclude_file" ]; then
+              # 下载 -> 剔除上游注释 -> 剔除空行 -> 剔除排除列表关键字 -> 写入缓存
+              curl -sL "$source_url" | grep -v '^#' | grep -v '^[[:space:]]*$' | grep -vFf "$exclude_file" >> "$temp_body"
+            else
+              # 下载 -> 剔除上游注释 -> 剔除空行 -> 写入缓存
+              curl -sL "$source_url" | grep -v '^#' | grep -v '^[[:space:]]*$' >> "$temp_body"
+            fi
+            
+            # C. 核心统计逻辑：统计非注释且非空行的行数
+            local rule_count=$(grep -v '^#' "$temp_body" | grep -v '^[[:space:]]*$' | wc -l)
+            
+            # D. 构造最终文件：Header + 正文
+            echo "# NAME: $display_name" > "$target_path"
+            echo "# AUTHOR: Rabbit-Spec" >> "$target_path"
+            echo "# REPO: https://github.com/Rabbit-Spec/Surge" >> "$target_path"
+            echo "# UPDATED: $UPDATE_TIME" >> "$target_path"
+            echo "# TOTAL: $rule_count" >> "$target_path"
+            echo "" >> "$target_path"
+            
+            cat "$temp_body" >> "$target_path"
+            rm "$temp_body"
+          }
+          
+          # --- 第一部分：常规规则同步 ---
+          # Loyalsoldier 仓库
+          URL_PROXY="https://raw.githubusercontent.com/Loyalsoldier/surge-rules/release/ruleset/cncidr.txt"
+          process_rule "$URL_PROXY" "ChinaCIDR.list" "深巷有喵的「ChinaCIDR」规则"
+          
+          # EAlyce 仓库
+          URL_PROXY="https://raw.githubusercontent.com/EAlyce/conf/refs/heads/main/Rule/OpenAI.list"
+          process_rule "$URL_PROXY" "AIGC_All_No_Resolve.list" "深巷有喵的「AIGC」规则"
+
+          # Virgil Clyne 仓库
+          URL_PROXY="https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/main/ruleset/ASN.China.list"
+          process_rule "$URL_PROXY" "ChinaASN.list" "深巷有喵的「ChinaASN」规则"
+
+          URL_PROXY="https://raw.githubusercontent.com/VirgilClyne/GetSomeFries/refs/heads/main/ruleset/ASN.Telegram.list"
+          process_rule "$URL_PROXY" "Telegram_All_No_Resolve.list" "深巷有喵的「TelegramASN」规则"
+
+          # blackmatrix7 仓库
+          URL_PROXY="https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/China/China_All_No_Resolve.list"
+          process_rule "$URL_PROXY" "China_All_No_Resolve.list" "深巷有喵的「China」规则"
+
+          URL_PROXY="https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/GlobalMedia/GlobalMedia_All_No_Resolve.list"
+          process_rule "$URL_PROXY" "GlobalMedia_All_No_Resolve.list" "深巷有喵的「GlobalMedia」规则"
+
+          URL_PROXY="https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Apple/Apple_All_No_Resolve.list"
+          process_rule "$URL_PROXY" "Apple_All_No_Resolve.list" "深巷有喵的「Apple」规则"
+
+          # --- 第二部分：Proxy_All_No_Resolve.list 聚合处理 ---
+          PROXY_TARGET="Rules/Proxy_All_No_Resolve.list"
+          PROXY_EXCLUDE="Rules/Manual/Proxy_All_No_Resolve.exclude.txt"
+          PROXY_MANUAL="Rules/Manual/Proxy_All_No_Resolve.txt"
+          proxy_temp=$(mktemp)
+          
+          # A. Proxy 手动规则
+          if [ -f "$PROXY_MANUAL" ]; then
+            echo "# ======= 手动维护规则 ========" >> "$proxy_temp"
+            cat "$PROXY_MANUAL" >> "$proxy_temp"
+            echo "" >> "$proxy_temp"
+          fi
+          
+          # B. Proxy 聚合源
+          PROXY_SUBS=(
+            "GitHub|https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/GitHub/GitHub.list"
+            "Proxy|https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Surge/Proxy/Proxy_All_No_Resolve.list"
+          )
+          
+          for sub in "${PROXY_SUBS[@]}"; do
+            name="${sub%%|*}"
+            url="${sub#*|}"
+            echo "# ======= $name ========" >> "$proxy_temp"
+            if [ -f "$PROXY_EXCLUDE" ] && [ -s "$PROXY_EXCLUDE" ]; then
+              curl -sL "$url" | grep -v '^#' | grep -v '^[[:space:]]*$' | grep -vFf "$PROXY_EXCLUDE" >> "$proxy_temp"
+            else
+              curl -sL "$url" | grep -v '^#' | grep -v '^[[:space:]]*$' >> "$proxy_temp"
+            fi
+            echo "" >> "$proxy_temp"
+          done
+          
+          # C. 格式清洗
+          sed -i 's/\r//g' "$proxy_temp"
+
+          # D. 统计 Proxy 规则数
+          proxy_count=$(grep -v '^#' "$proxy_temp" | grep -v '^[[:space:]]*$' | wc -l)
+          
+          # E. 写入 Proxy_All_No_Resolve.list 最终文件
+          echo "# NAME: 深巷有喵的「Proxy」规则" > "$PROXY_TARGET"
+          echo "# AUTHOR: Rabbit-Spec" >> "$PROXY_TARGET"
+          echo "# REPO: https://github.com/Rabbit-Spec/Surge" >> "$PROXY_TARGET"
+          echo "# UPDATED: $UPDATE_TIME" >> "$PROXY_TARGET"
+          echo "# TOTAL: $proxy_count" >> "$PROXY_TARGET"
+          echo "" >> "$PROXY_TARGET"
+          cat "$proxy_temp" >> "$PROXY_TARGET"
+          rm "$proxy_temp"
+
+          # --- 第三部分：Game_All_No_Resolve.list 聚合处理 ---
+          GAME_TARGET="Rules/Game_All_No_Resolve.list"
+          GAME_EXCLUDE="Rules/Manual/Game_All_No_Resolve.exclude.txt"
+          GAME_MANUAL="Rules/Manual/Game_All_No_Resolve.txt"
+          game_temp=$(mktemp)
+          
+          # A. Game 手动规则
+          if [ -f "$GAME_MANUAL" ]; then
+            echo "# ======= 手动维护规则 ========" >> "$game_temp"
+            cat "$GAME_MANUAL" >> "$game_temp"
+            echo "" >> "$game_temp"
+          fi
+          
+          # B. Game 聚合源
+          GAME_SUBS=(
+            "Epic|https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/rule/Surge/Epic/Epic.list"
+            "Sony|https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/rule/Surge/Sony/Sony.list"
+            "Steam|https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/rule/Surge/Steam/Steam.list"
+            "Nintendo|https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/release/rule/Surge/Nintendo/Nintendo.list"
+          )
+          
+          for sub in "${GAME_SUBS[@]}"; do
+            name="${sub%%|*}"
+            url="${sub#*|}"
+            echo "# ======= $name ========" >> "$game_temp"
+            if [ -f "$GAME_EXCLUDE" ] && [ -s "$GAME_EXCLUDE" ]; then
+              curl -sL "$url" | grep -v '^#' | grep -v '^[[:space:]]*$' | grep -vFf "$GAME_EXCLUDE" >> "$game_temp"
+            else
+              curl -sL "$url" | grep -v '^#' | grep -v '^[[:space:]]*$' >> "$game_temp"
+            fi
+            echo "" >> "$game_temp"
+          done
+          
+          # C. 统计 Game 规则数
+          game_count=$(grep -v '^#' "$game_temp" | grep -v '^[[:space:]]*$' | wc -l)
+          
+          # D. 写入 Game.list 最终文件
+          echo "# NAME: 深巷有喵的「Game」规则" > "$GAME_TARGET"
+          echo "# AUTHOR: Rabbit-Spec" >> "$GAME_TARGET"
+          echo "# REPO: https://github.com/Rabbit-Spec/Surge" >> "$GAME_TARGET"
+          echo "# UPDATED: $UPDATE_TIME" >> "$GAME_TARGET"
+          echo "# TOTAL: $game_count" >> "$GAME_TARGET"
+          echo "" >> "$GAME_TARGET"
+          cat "$game_temp" >> "$GAME_TARGET"
+          rm "$game_temp"
+
+      # 步骤 3：Git 提交与推送到远程仓库
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add Rules/
+          if ! git diff --staged --quiet; then
+            COMMIT_TIME=$(TZ="Asia/Shanghai" date +"%Y.%m.%d %H:%M:%S")
+            git commit -m "$COMMIT_TIME Update"
+            git push
+          fi

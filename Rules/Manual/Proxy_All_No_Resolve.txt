@@ -1,0 +1,6 @@
+# SNBFORUMS
+DOMAIN-SUFFIX,snbforums.com
+# Asuswrt‑Merlin
+DOMAIN-SUFFIX,asuswrt-merlin.net
+# CalDigit
+DOMAIN-SUFFIX,caldigit.com
