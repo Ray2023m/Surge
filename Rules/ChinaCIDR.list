@@ -1,8 +1,8 @@
 # NAME: 深巷有喵的「ChinaCIDR」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.04.17 04:42:47
-# TOTAL: 8644
+# UPDATED: 2026.04.18 04:39:32
+# TOTAL: 8645
 
 # ======= 手动维护规则 ========
 # 小佩宠物
@@ -7328,6 +7328,7 @@ IP-CIDR6,2400:cb80:e30::/44
 IP-CIDR6,2400:cb80:e40::/44
 IP-CIDR6,2400:da00::/32
 IP-CIDR6,2400:dd00::/28
+IP-CIDR6,2400:e680::/32
 IP-CIDR6,2400:ee00::/32
 IP-CIDR6,2400:f6e0::/32
 IP-CIDR6,2400:f720::/32
