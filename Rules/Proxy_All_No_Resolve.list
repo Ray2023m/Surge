@@ -1,8 +1,8 @@
 # NAME: 深巷有喵的「Proxy」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.05.19 05:06:04
-# TOTAL: 6808
+# UPDATED: 2026.05.20 05:14:37
+# TOTAL: 6810
 
 # ======= 手动维护规则 ========
 # SNBFORUMS
@@ -4928,6 +4928,7 @@ DOMAIN-SUFFIX,shwchurch3.com
 DOMAIN-SUFFIX,siddharthasintent.org
 DOMAIN-SUFFIX,sidelinesnews.com
 DOMAIN-SUFFIX,sidelinessportseatery.com
+DOMAIN-SUFFIX,sider.ai
 DOMAIN-SUFFIX,sierrafriendsoftibet.org
 DOMAIN-SUFFIX,signal.org
 DOMAIN-SUFFIX,sijihuisuo.club
@@ -6633,6 +6634,7 @@ DOMAIN-SUFFIX,zgzcjj.net
 DOMAIN-SUFFIX,zhanbin.net
 DOMAIN-SUFFIX,zhangboli.net
 DOMAIN-SUFFIX,zhangtianliang.com
+DOMAIN-SUFFIX,zhangzhehan.net
 DOMAIN-SUFFIX,zhanlve.org
 DOMAIN-SUFFIX,zhenghui.org
 DOMAIN-SUFFIX,zhenlibu.info
