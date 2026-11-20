@@ -1,8 +1,8 @@
 # NAME: 深巷有喵的「AIGC」规则
 # AUTHOR: Rabbit-Spec
 # REPO: https://github.com/Rabbit-Spec/Surge
-# UPDATED: 2026.11.19 09:36:51
-# TOTAL: 104
+# UPDATED: 2026.11.20 09:35:20
+# TOTAL: 106
 
 # ======= 上游同步规则 ========
 DOMAIN,7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
@@ -16,9 +16,11 @@ DOMAIN,antigravity-unleash.goog
 DOMAIN,antigravity.google
 DOMAIN,api.github.com
 DOMAIN,api.jetbrains.ai
+DOMAIN,bridge.claudeusercontent.com
 DOMAIN,browser-intake-datadoghq.com
 DOMAIN,cdn.usefathom.com
 DOMAIN,chat.openai.com.cdn.cloudflare.net
+DOMAIN,claude.site
 DOMAIN,cloud.zed.dev
 DOMAIN,daily-cloudcode-pa.googleapis.com
 DOMAIN,daily-cloudcode-pa.sandbox.googleapis.com
